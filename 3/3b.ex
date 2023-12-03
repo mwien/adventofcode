@@ -2,8 +2,7 @@ defmodule AOCDay3b do
 
   def put_marks_on_neighbors(marks, i, j) do
     neighbors = for x <- [-1, 0, 1], y <- [-1, 0, 1], do: {i+x, j+y} 
-    id = Enum.random(0..1_000_000_000)
-    Enum.reduce(neighbors, marks, &Map.put(&2, &1, id))
+    Enum.reduce(neighbors, marks, &Map.put(&2, &1, {i,j}))
   end
 
   def put_marks_for_field(marks, i, j, c) do
