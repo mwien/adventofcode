@@ -5,9 +5,9 @@ defmodule AOCDay4 do
   def matches(card) do
     [first, second] = String.split(card, "|")
     [_, _ | winnums] = String.split(first)
-    winnums = Enum.map(winnums, &Integer.parse(&1))
+    winnumset = MapSet.new(winnums, &Integer.parse(&1))
     cardnums = Enum.map(String.split(second), &Integer.parse(&1))
-    Enum.reduce(cardnums, 0, &(&2 + if Enum.member?(winnums, &1), do: 1, else: 0)) 
+    Enum.reduce(cardnums, 0, &(&2 + if MapSet.member?(winnumset, &1), do: 1, else: 0)) 
   end
 
   def score(matches) do
