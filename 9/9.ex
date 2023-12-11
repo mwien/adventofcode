@@ -1,4 +1,4 @@
-defmodule AOCDay8 do
+defmodule AOCDay9 do
 
   def parse(file) do
     File.read!(file)
