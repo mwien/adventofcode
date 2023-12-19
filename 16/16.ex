@@ -31,17 +31,38 @@ defmodule AOCDay16 do
   end
 
   def dfs(grid, pos, dir, vis) do
-    Enum.reduce(neighbors(grid, pos, dir), MapSet.put(vis, pos), fn {npos, ndir}, nvis -> 
-      dfs(grid, npos, ndir, nvis) end) 
-    # TODO: check vis
+    Enum.reduce(neighbors(grid, pos, dir), MapSet.put(vis, {pos, dir}), fn {npos, ndir}, nvis ->
+      if MapSet.member?(nvis, {npos, ndir}), do: nvis, else: dfs(grid, npos, ndir, nvis) end) 
+  end
+
+  def count_energized(grid, {pos, dir} = _init) do
+    dfs(grid, pos, dir, MapSet.new()) 
+    |> Enum.map(fn {pos, _} -> pos end)
+    |> MapSet.new()
+    |> MapSet.size()
   end
 
   def part1(file) do
+    File.read!(file)
+    |> to_index_map()
+    |> count_energized({{0,0}, {1,0}})
+  end
+
+  def get_init_pos({n, m}) do
+    Enum.map(0..n, &([{{&1, 0}, {0,1}}, {{&1,m}, {0, -1}}]))
+    ++ Enum.map(0..m, &([{{0, &1}, {1, 0}}, {{n, &1}, {-1, 0}}]))
+    |> List.flatten() 
+  end
+
+  def part2(file) do
     grid = File.read!(file)
     |> to_index_map()
+  
+    Enum.max(Map.keys(grid))
+    |> get_init_pos()
+    |> Enum.map(&count_energized(grid, &1))
+    |> Enum.max()
 
-    dfs(grid, {0,0}, {1,0}, MapSet.new()) 
-    |> MapSet.size()
   end
 
 end
