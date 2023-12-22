@@ -19,7 +19,6 @@ defmodule AOCDay20 do
     |> Enum.map(&parse_module(&1))
     |> Map.new()
 
-    IO.inspect(modules)
 
     modules = Enum.reduce(Map.keys(modules), modules, fn mod, modules -> 
       Enum.reduce(modules[mod].children, modules, fn child, modules ->
@@ -67,31 +66,47 @@ defmodule AOCDay20 do
     end
   end
 
-  def simulate(modules, {[], []}, {l, h}) do
+  def simulate(modules, {[], []}, {l, h}, _) do
     {modules, {l, h}}
   end
 
-  def simulate(modules, queue, {l, h}) do
+  def simulate(modules, queue, {l, h}, b) do
     {{:value, {name, pulse, from}}, queue} = :queue.out(queue)
     if Map.has_key?(modules, name) do
+      modules = if pulse == 0, do: Map.put(modules, name, Map.put_new(modules[name], :first, b)), else: modules
       modules = update_modules(modules, name, pulse, from)
       queue = send_pulse(modules, queue, name, pulse)
-      simulate(modules, queue, {l + 1 - pulse, h + pulse})
+      simulate(modules, queue, {l + 1 - pulse, h + pulse}, b)
     else 
-      simulate(modules, queue, {l + 1 - pulse, h + pulse}) 
+      simulate(modules, queue, {l + 1 - pulse, h + pulse}, b) 
     end
   end
 
   def part1(file) do
     modules = File.read!(file)
     |> parse_modules()
-    #|> IO.inspect()
 
-    {_, {l, h}} = Enum.reduce(1..1000, {modules, {0,0}}, fn _, {modules, counts} -> 
-      simulate(modules, :queue.from_list([{"broadcaster", 0, "button"}]), counts) 
+    {_, {l, h}} = Enum.reduce(1..1000, {modules, {0,0}}, fn b, {modules, counts} -> 
+      simulate(modules, :queue.from_list([{"broadcaster", 0, "button"}]), counts, b) 
     end)
 
     l * h
+  end
+  
+  def lcm(a, b) do
+    div(abs(a * b), Integer.gcd(a, b))
+  end
+  
+  def part2(file) do
+    modules = File.read!(file)
+    |> parse_modules()
+
+    {modules, _} = Enum.reduce(1..100000, {modules, {0,0}}, fn b, {modules, counts} -> 
+      simulate(modules, :queue.from_list([{"broadcaster", 0, "button"}]), counts, b) 
+    end)
+    
+    [modules["ft"].first, modules["jz"].first, modules["sv"].first, modules["ng"].first]
+    |> Enum.reduce(&lcm(&1, &2))
   end
 end
 
