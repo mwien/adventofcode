@@ -104,7 +104,9 @@ defmodule AOCDay20 do
     {modules, _} = Enum.reduce(1..100000, {modules, {0,0}}, fn b, {modules, counts} -> 
       simulate(modules, :queue.from_list([{"broadcaster", 0, "button"}]), counts, b) 
     end)
-    
+   
+    # module names taken from input file
+    # parents of parents of rx
     [modules["ft"].first, modules["jz"].first, modules["sv"].first, modules["ng"].first]
     |> Enum.reduce(&lcm(&1, &2))
   end
