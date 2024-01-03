@@ -18,34 +18,68 @@ defmodule AOCDay22 do
     for x <- x1..x2, y <- y1..y2, z <- z1..z2, do: [x, y, z]
   end
 
-  def add_brick(grid, brick) do
-    # TODO 
+  def below_pos([x, y, z]), do: [x, y, z-1]
+
+  def add_brick(grid, {pos, id}) do
+    brick_pos(pos)
+    |> Enum.reduce(grid, &Map.put(&2, &1, id))
   end
 
   def fall_down(grid, {[[_, _, 1], [_, _, _]], _} = brick), do: add_brick(grid, brick) 
-  def fall_down(grid, {[[x1, y1, z1], [x2, y2, z2]], id} = brick) do
-    if brick_pos(brick)
-    |> Enum.map(fn [x, y, z] -> [x, y, z-1] end)
+  def fall_down(grid, {[spos, epos], id} = brick) do
+    if brick_pos([spos, epos])
+    |> Enum.map(&below_pos(&1))
     |> Enum.all?(&!Map.has_key?(grid, &1)) do
-      fall_down(grid, {[[x1, y1, z1-1], [x2, y2, z2-1]], id})    
+      fall_down(grid, {[below_pos(spos), below_pos(epos)], id})    
     else
       add_brick(grid, brick) 
     end 
   end
 
+  def add_below(below, {pos, id}, grid) do
+    case Map.get(grid, below_pos(pos)) do
+      nil -> below
+      ^id -> below
+      b_id -> Map.update(below, id, MapSet.new([b_id]), &MapSet.put(&1, b_id)) 
+    end
+  end
+
   def part1(file) do
     bricks = parse(file)
       
-    support_bricks = Enum.sort_by(bricks, fn [[_, _, z], _] -> z end)
+    grid = Enum.sort_by(bricks, fn [[_, _, z], _] -> z end)
+    |> Enum.with_index()
     |> Enum.reduce(%{}, &fall_down(&2, &1))
-    |> Map.to_list()
-    |> Enum.reduce(%{}, &add_below(&2, &1))
+    
+    support_bricks = Map.to_list(grid)
+    |> Enum.reduce(%{}, &add_below(&2, &1, grid))
     |> Map.values()
-    |> Enum.filter(&(length(&1) == 1))
+    |> Enum.filter(&(MapSet.size(&1) == 1))
     |> Enum.uniq()
     |> length()
     
-    bricks - support_bricks
+    length(bricks) - support_bricks
+  end 
+
+  def remove_brick(below, id) do
+    # TODO
+  end
+
+  chain_reaction(below) do
+    # remove brick, here or before first call
+  end
+
+  def part2(file) do
+    bricks = parse(file)
+      
+    grid = Enum.sort_by(bricks, fn [[_, _, z], _] -> z end)
+    |> Enum.with_index()
+    |> Enum.reduce(%{}, &fall_down(&2, &1))
+    
+    below = Map.to_list(grid)
+    |> Enum.reduce(%{}, &add_below(&2, &1, grid))
+
+    Enum.map(1..length(bricks), chain_reaction(below))
   end
 
 end
