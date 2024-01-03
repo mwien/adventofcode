@@ -33,14 +33,23 @@ defmodule AOCDay21 do
     
     {start, _} = Map.to_list(grid)
     |> Enum.find(fn {_, c} -> c == ?S end)
+    |> IO.inspect()
 
     dfs(grid, start, steps, 0, MapSet.new())
     |> MapSet.filter(fn {_, d} -> d == steps end) 
-    |> IO.inspect()
     |> MapSet.size()
-
   end
+
+  # for part 2 I (with a bit of online help)
+  # - duplicated the grid (file 'rep_main.in')
+  # - computed part1("rep_main.in", 65), part1("rep_main.in", 65 + 131), part1("rep_main.in", 65 + 2*131), which for me are 3859, 34324, 95135
+  # - in julia do interpolation: 
+  # using SimplePolynomials
+  # p = interpolate([3859, 34324, 95135])
+  # res = p(div(26501365, 131))
+
 end
+
 
 
 
