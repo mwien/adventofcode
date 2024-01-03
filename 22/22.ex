@@ -62,11 +62,18 @@ defmodule AOCDay22 do
   end 
 
   def remove_brick(below, id) do
-    # TODO
+    below = Map.delete(below, id)
+    Enum.reduce(Map.keys(below), below, fn key, below -> 
+        Map.update!(below, key, &MapSet.delete(&1, id))
+      end)
   end
 
-  chain_reaction(below) do
-    # remove brick, here or before first call
+  def chain_reaction(below) do
+    case Map.keys(below)
+    |> Enum.find(&(MapSet.size(Map.get(below, &1)) == 0)) do
+      nil -> 0 
+      falling_brick -> 1 + chain_reaction(remove_brick(below, falling_brick))
+    end
   end
 
   def part2(file) do
@@ -79,14 +86,8 @@ defmodule AOCDay22 do
     below = Map.to_list(grid)
     |> Enum.reduce(%{}, &add_below(&2, &1, grid))
 
-    Enum.map(1..length(bricks), chain_reaction(below))
+    Enum.map(0..length(bricks), &(remove_brick(below, &1) |> chain_reaction()))
+    |> Enum.sum()
   end
 
 end
-
-
-
-
-
-
-
