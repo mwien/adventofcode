@@ -55,5 +55,5 @@ defmodule AOCDay24 do
     |> div(2)
   end
 
-  # solved part2 externally by solving the linear equation system
+  # solved part2 externally with a linear equation solver
 end
