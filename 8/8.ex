@@ -1,18 +1,24 @@
 defmodule AOCDay8 do
   def parse(file) do
-    [sequence, rest] = File.read!(file)
+    [sequence, rest] =
+      File.read!(file)
       |> String.split("\n\n")
-    rest = String.trim(rest)
+
+    rest =
+      String.trim(rest)
       |> String.split("\n")
       |> Enum.map(fn ln ->
         [[node], [left], [right]] = Regex.scan(~r/[[:alnum:]]+/, ln)
         {node, {left, right}}
       end)
       |> Map.new()
-    sequence = String.to_charlist(sequence)
+
+    sequence =
+      String.to_charlist(sequence)
       |> Enum.map(fn c ->
         if ?L == c, do: 0, else: 1
       end)
+
     {sequence, rest}
   end
 
@@ -30,7 +36,7 @@ defmodule AOCDay8 do
 
   def part1(file) do
     {sequence, network} = parse(file)
-    search("AAA", Map.new(Enum.with_index(sequence, &({&2, &1}))), network, length(sequence), 0)
+    search("AAA", Map.new(Enum.with_index(sequence, &{&2, &1})), network, length(sequence), 0)
   end
 
   def lcm(a, b) do
@@ -39,8 +45,9 @@ defmodule AOCDay8 do
 
   def part2(file) do
     {sequence, network} = parse(file)
-    seq_map = Map.new(Enum.with_index(sequence, &({&2, &1})))
-    Map.keys(network) 
+    seq_map = Map.new(Enum.with_index(sequence, &{&2, &1}))
+
+    Map.keys(network)
     |> Enum.filter(&String.ends_with?(&1, "A"))
     |> Enum.map(&search(&1, seq_map, network, length(sequence), 0))
     |> Enum.reduce(&lcm(&1, &2))

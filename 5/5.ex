@@ -1,14 +1,14 @@
 defmodule AOCDay5 do
-
   def parse_map([]) do
     {[], []}
   end
 
   def parse_map(input) do
-    [head | tail] = input 
+    [head | tail] = input
+
     if head == "" do
       {[], tail}
-    else 
+    else
       {map, tail} = parse_map(tail)
       {[Enum.map(String.split(head), &String.to_integer(&1)) | map], tail}
     end
@@ -20,6 +20,7 @@ defmodule AOCDay5 do
 
   def parse_maps(input) do
     [head | tail] = input
+
     if String.ends_with?(head, "map:") do
       {map, tail} = parse_map(tail)
       [map | parse_maps(tail)]
@@ -29,10 +30,12 @@ defmodule AOCDay5 do
   end
 
   def parse(file) do
-    input = File.read!(file)
-    |> String.trim()
-    |> String.split("\n")
-    [seedinfo | rest] = input 
+    input =
+      File.read!(file)
+      |> String.trim()
+      |> String.split("\n")
+
+    [seedinfo | rest] = input
     [_ | seedinfo] = String.split(seedinfo)
     seedinfo = Enum.map(seedinfo, &String.to_integer(&1))
     maps = parse_maps(rest)
@@ -40,19 +43,19 @@ defmodule AOCDay5 do
   end
 
   def check_transform({object, true}, _) do
-    {object, true} 
+    {object, true}
   end
 
   def check_transform({object, done}, [t, s, l]) do
     if s <= object and object < s + l do
       {object - s + t, true}
-    else 
+    else
       {object, done}
     end
   end
 
   def transform(object, map) do
-    {object, _} = Enum.reduce(map, {object, false}, &check_transform(&2, &1)) 
+    {object, _} = Enum.reduce(map, {object, false}, &check_transform(&2, &1))
     object
   end
 
@@ -62,7 +65,7 @@ defmodule AOCDay5 do
 
   def parta(file) do
     {seeds, maps} = parse(file)
-    Enum.reduce(seeds, 10**18, &(min(&2, location_for_seed(&1, maps))))
+    Enum.reduce(seeds, 10 ** 18, &min(&2, location_for_seed(&1, maps)))
   end
 
   def rec_update_range(range, []) do
@@ -70,19 +73,21 @@ defmodule AOCDay5 do
   end
 
   def rec_update_range([x, off], [[t, s, l] | tail]) do
-    if off <= 0 do 
-      [] 
+    if off <= 0 do
+      []
     else
-      left = [x, min(s, x+off) - x]
-      center = [max(x, s) + (t-s), min(x+off, s+l) - max(x, s)] 
-      right = [max(x, s+l) , x+off - max(x, s+l)]
+      left = [x, min(s, x + off) - x]
+      center = [max(x, s) + (t - s), min(x + off, s + l) - max(x, s)]
+      right = [max(x, s + l), x + off - max(x, s + l)]
       [center, left | rec_update_range(right, tail)]
     end
   end
 
   def update_range(range, map, acc) do
-    ranges = rec_update_range(range, map)
-    |> Enum.filter(fn [_, off] -> off > 0 end)
+    ranges =
+      rec_update_range(range, map)
+      |> Enum.filter(fn [_, off] -> off > 0 end)
+
     ranges ++ acc
   end
 
@@ -90,11 +95,17 @@ defmodule AOCDay5 do
     Enum.reduce(ranges, [], &update_range(&1, map, &2))
   end
 
-  def partb(file) do 
-    {seeds, maps} = parse(file) 
+  def partb(file) do
+    {seeds, maps} = parse(file)
     seeds = Enum.chunk_every(seeds, 2)
-    ranges = Enum.reduce(maps, seeds, &update_ranges(&2, Enum.sort(&1, fn [_, b1, _], [_, b2, _] -> b1 <= b2 end)))
-    Enum.reduce(ranges, 10**18, fn [x, o], mn -> min(x, mn) end)
-  end
 
+    ranges =
+      Enum.reduce(
+        maps,
+        seeds,
+        &update_ranges(&2, Enum.sort(&1, fn [_, b1, _], [_, b2, _] -> b1 <= b2 end))
+      )
+
+    Enum.reduce(ranges, 10 ** 18, fn [x, o], mn -> min(x, mn) end)
+  end
 end

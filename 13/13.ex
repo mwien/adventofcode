@@ -1,13 +1,13 @@
 defmodule AOCDay13 do
-
   def to_index_map(s) do
     String.split(s, "\n", trim: true)
     |> Enum.with_index()
-    |> Enum.reduce(%{}, fn {ln, i}, mp -> 
-      Map.merge(mp, 
+    |> Enum.reduce(%{}, fn {ln, i}, mp ->
+      Map.merge(
+        mp,
         String.to_charlist(ln)
         |> Enum.with_index()
-        |> Map.new(fn {c, j} -> {{j,i}, c} end)
+        |> Map.new(fn {c, j} -> {{j, i}, c} end)
       )
     end)
   end
@@ -15,14 +15,14 @@ defmodule AOCDay13 do
   def check_line(i, j, m, grid, :horizontal) do
     Enum.all?(0..m, &(Map.get(grid, {i, &1}) == Map.get(grid, {j, &1})))
   end
-  
+
   def check_line(i, j, m, grid, :vertical) do
     Enum.all?(0..m, &(Map.get(grid, {&1, i}) == Map.get(grid, {&1, j})))
   end
 
   def check_reflection(i, n, m, grid, dir) do
     cond do
-      Enum.all?(0..min(i, n-i-1), &check_line(i - &1, &1 + 1 + i, m, grid, dir)) -> i + 1
+      Enum.all?(0..min(i, n - i - 1), &check_line(i - &1, &1 + 1 + i, m, grid, dir)) -> i + 1
       true -> 0
     end
   end
@@ -30,8 +30,11 @@ defmodule AOCDay13 do
   def find_reflection(grid) do
     {n, m} = Enum.max(Map.keys(grid))
     horizontal = Enum.map(0..n, &check_reflection(&1, n, m, grid, :horizontal))
-    vertical = Enum.map(0..m, &check_reflection(&1, m, n, grid, :vertical))
-    |> Enum.map(&(&1 * 100))
+
+    vertical =
+      Enum.map(0..m, &check_reflection(&1, m, n, grid, :vertical))
+      |> Enum.map(&(&1 * 100))
+
     horizontal ++ vertical
   end
 
@@ -45,12 +48,14 @@ defmodule AOCDay13 do
   end
 
   def smudge_reflection(grid) do
-    old = find_reflection(grid)
+    old =
+      find_reflection(grid)
       |> Enum.sum()
+
     Map.keys(grid)
-    |> Enum.map(fn pos -> 
+    |> Enum.map(fn pos ->
       c = grid[pos]
-      find_reflection(Map.put(grid, pos, (if c == ?#, do: ?., else: ?#)))
+      find_reflection(Map.put(grid, pos, if(c == ?#, do: ?., else: ?#)))
     end)
     |> List.flatten()
     |> Enum.filter(&(&1 != old))
@@ -66,4 +71,3 @@ defmodule AOCDay13 do
     |> Enum.sum()
   end
 end
-

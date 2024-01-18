@@ -1,13 +1,12 @@
 defmodule AOCDay9 do
-
   def parse(file) do
     File.read!(file)
     |> String.trim()
     |> String.split("\n")
-    |> Enum.map(fn sequence -> 
+    |> Enum.map(fn sequence ->
       String.split(sequence)
       |> Enum.map(&String.to_integer(&1))
-    end) 
+    end)
   end
 
   def differences([_]) do
@@ -21,7 +20,7 @@ defmodule AOCDay9 do
   def predict_next(sequence) do
     if Enum.all?(sequence, &(&1 == 0)) do
       0
-    else 
+    else
       List.last(sequence) + predict_next(differences(sequence))
     end
   end
@@ -29,9 +28,9 @@ defmodule AOCDay9 do
   def predict_before(sequence) do
     if Enum.all?(sequence, &(&1 == 0)) do
       0
-    else 
+    else
       List.first(sequence) - predict_before(differences(sequence))
-    end  
+    end
   end
 
   def part1(file) do
@@ -46,4 +45,3 @@ defmodule AOCDay9 do
     |> Enum.sum()
   end
 end
-
