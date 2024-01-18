@@ -80,6 +80,30 @@ defmodule AOCDay23 do
     end
   end
 
+  def reach(grid, u, last, dist, vertices) do
+    allneighbors(grid, u) 
+    |> Enum.filter(&(&1 != last))
+    |> Enum.reduce([], fn ngh, mps -> 
+      case MapSet.member?(vertices, ngh) do
+        true -> [{ngh, dist+1} | mps]
+        false -> mps ++ reach(grid, ngh, u, dist+1, vertices)
+      end
+    end)
+  end  
+  
+  def dfs2(graph, u, vis, dist, {n, m}) do
+    if u == {n-1, m} do
+      dist
+    else 
+      Map.get(graph, u)
+      |> Enum.filter(fn {ngh, _} -> 
+        !MapSet.member?(vis, ngh) end)
+      |> Enum.reduce(0, fn {ngh, w}, mx -> 
+        max(mx, dfs2(graph, ngh, MapSet.put(vis, ngh), dist+w, {n, m})) 
+      end)
+    end
+  end
+
   # too slow like this -> need to compress the input to a graph with edge weights
   def part2(file) do
     grid = File.read!(file)
@@ -88,8 +112,20 @@ defmodule AOCDay23 do
     {n, m} = Map.keys(grid) |> 
       Enum.max()
 
-    dfs(grid, {1,0}, MapSet.new([{1,0}]), {n,m})
-    |> Kernel.-(1)
+    # filter positions which have on or more != # and != . next to it 
+    vertices = Map.keys(grid)
+    |> Enum.filter(&(Map.get(grid, &1) != ?#))
+    |> Enum.filter(fn {x, y} -> 
+      y == 0 or y == m or Enum.count(allneighbors(grid, {x, y}), &(Map.get(grid, &1) != ?.)) >= 2
+    end) 
+    |> MapSet.new()
+
+    graph = Enum.map(vertices, &({&1, reach(grid, &1, {-1, -1}, 0, vertices)}))
+    |># #Map.new()
+
+
+    dfs2(graph, {1,0}, MapSet.new([{1,0}]), 0, {n,m})
+    #|> Kernel.-(1)
   end
 
 end
