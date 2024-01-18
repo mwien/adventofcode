@@ -54,4 +54,6 @@ defmodule AOCDay24 do
     |> Enum.count(&cross_inside(&1, mn, mx))
     |> div(2)
   end
+
+  # solved part2 externally by solving the linear equation system
 end
