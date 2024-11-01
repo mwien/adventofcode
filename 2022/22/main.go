@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type grid [][]byte
@@ -18,60 +16,109 @@ type position struct {
 	row, col, dir int
 }
 
-var dirs = []string{"right", "down", "left", "up"}
+func (g grid) getPos(p position) byte {
+	if p.row < 0 || p.row >= len(g) || p.col < 0 || p.col >= len(g[p.row]) {
+		return ' '
+	}
+	return g[p.row][p.col]
+}
+
+type move struct {
+	steps int
+	turn  rune
+}
 
 func part1(reader io.Reader) {
 	scanner := bufio.NewScanner(reader)
 	readGrid := true
 	var g grid
-	var moves string
+	var m []move
 	for scanner.Scan() {
 		line := scanner.Text()
+		// reading grid stops with empty line
 		if line == "" {
 			readGrid = false
+			continue
 		}
 		if readGrid {
 			g = append(g, []byte(line))
 		} else {
-			moves = line
-		}
-	}
-	var firstNonEmpty []int
-	for i := range g {
-		for j := range g[i] {
-			if g[i][j] != ' ' {
-				firstNonEmpty = append(firstNonEmpty, j)
-				break
+			// parse moves
+			line += "S" // last move has "S(tay)" turn
+			stepsString := ""
+			for _, v := range line {
+				if v == 'L' || v == 'R' || v == 'S' {
+					steps, err := strconv.Atoi(stepsString)
+					if err != nil {
+						log.Fatal(err)
+					}
+					m = append(m, move{steps, v})
+					stepsString = ""
+				} else {
+					stepsString += string(v)
+				}
 			}
 		}
 	}
-	pos := position{0, firstNonEmpty[0], 0}
-	i := 0
-	for i < len(moves) {
-		if i == 'R' {
-			pos.dir = (pos.dir + 1) % 4
-		} else if i == 'L' {
-			pos.dir = (pos.dir + 3) % 4
-		} else {
-			steps := 0
-			for j := i; j < len(moves); j++ {
-				if j == 'R' || j == 'L' {
+	var initialCol int
+	for i, v := range g[0] {
+		if v != ' ' {
+			initialCol = i
+		}
+	}
+	pos := position{0, initialCol, 0}
+	for _, mv := range m {
+		pos = walkSteps(g, pos, mv.steps)
+		pos = doTurn(pos, mv.turn)
+	}
+	println(1000*(pos.row+1) + 4*(pos.col+1) + pos.dir)
+}
+
+func goStep(pos position) position {
+	nextPos := pos
+	switch pos.dir {
+	case 0:
+		nextPos.col += 1
+	case 1:
+		nextPos.row += 1
+	case 2:
+		nextPos.col -= 1
+	case 3:
+		nextPos.row -= 1
+	}
+	return nextPos
+}
+
+func walkSteps(g grid, pos position, steps int) position {
+	for range steps {
+		nextPos := goStep(pos)
+		if g.getPos(nextPos) == ' ' {
+			nextPos.dir = (nextPos.dir + 2) % 4
+			for {
+				nextPos = goStep(nextPos)
+				if g.getPos(nextPos) == ' ' {
+					nextPos.dir = (nextPos.dir + 2) % 4
+					nextPos = goStep(nextPos)
 					break
 				}
-				steps *= 10
-				steps += int(moves[j] - '0')
-			}
-			for _ = range steps {
-				if pos.col+1 > len(g[pos.row]) {
-					pos.col = firstNonEmpty[pos.row]
-				} else if pos.col-1 < 0 {
-					pos.col = len(g[pos.row]) - 1
-				} else {
-					pos.col = 
-				}
 			}
 		}
+		if g.getPos(nextPos) == '#' {
+			return pos
+		}
+		pos = nextPos
 	}
+	return pos
+}
+
+func doTurn(pos position, t rune) position {
+	if t == 'L' {
+		pos.dir = (pos.dir + 3) % 4
+	}
+	if t == 'R' {
+		pos.dir = (pos.dir + 1) % 4
+	}
+	return pos
 }
 
 func part2(reader io.Reader) {
