@@ -1,7 +1,6 @@
 import * as fs from "fs";
 
-//const input = fs.readFileSync("sample.in").toString().trim();
-const input = fs.readFileSync("main.in").toString().trim();
+const input = fs.readFileSync(0, "utf-8").trim();
 
 part1(input);
 part2(input);
@@ -27,7 +26,44 @@ function part1(input) {
   console.log(risk);
 }
 
-function part2(input) {}
+function part2(input) {
+  const grid = input.split("\n").map((line) => {
+    return line.split("").map(Number);
+  });
+  const rows = grid.length;
+  const cols = grid[0].length;
+
+  const vis = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+  const comps = [];
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      if (vis[i][j] || grid[i][j] == 9) {
+        continue;
+      }
+      comps.push(componentSize(grid, vis, i, j, rows, cols));
+    }
+  }
+  comps.sort((a, b) => b - a);
+  console.log(comps[0] * comps[1] * comps[2]);
+}
+
+function componentSize(grid, vis, i, j, rows, cols) {
+  let sz = 0;
+  const stack = [[i, j]];
+  vis[i][j] = true;
+  while (stack.length > 0) {
+    const [u, v] = stack.pop();
+    sz += 1;
+    for (const [x, y] of neighbors(u, v, rows, cols)) {
+      if (!vis[x][y] && grid[x][y] != 9) {
+        stack.push([x, y]);
+        vis[x][y] = true;
+      }
+    }
+  }
+  return sz;
+}
 
 function neighbors(i, j, rows, cols) {
   const result = [];

@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* Language */
+    "target": "ESNext",
+    "lib": ["ESNext"],
+
+    /* Modules (Bun prefers modern ESM) */
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Interop */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* Paths */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    /* Output (optional for Bun, since it runs TS directly) */
+    "sourceMap": true,
+
+    /* Performance */
+    "skipLibCheck": true,
+
+    /* Bun / modern tooling */
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "types": ["node"]
+  }
+}
